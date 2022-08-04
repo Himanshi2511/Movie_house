@@ -1,0 +1,43 @@
+{
+  "name": "movie_house",
+  "version": "1.0.0",
+  "description": "Movie recommendation system",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Himanshi2511/Movie_house.git"
+  },
+  "author": "himanshi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Himanshi2511/Movie_house/issues"
+  },
+  "homepage": "https://github.com/Himanshi2511/Movie_house#readme",
+  "dependencies": {
+    "aos": "^3.0.0-beta.6",
+    "babel-node": "0.0.1-security",
+    "bcryptjs": "^2.4.3",
+    "child_process": "^1.0.2",
+    "connect-mongodb-session": "^2.4.1",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "ejs": "^3.1.6",
+    "express": "^4.17.1",
+    "express-session": "^1.17.2",
+    "mongoose": "^5.12.13",
+    "node-cron": "^3.0.0",
+    "node-pickle": "0.0.2",
+    "nodemailer": "^6.6.2",
+    "nodemon": "^2.0.16",
+    "peer": "^0.6.1",
+    "peerjs": "^1.3.2",
+    "python-shell": "^3.0.1",
+    "simple-peer": "^9.11.0",
+    "socket.io": "^4.1.2",
+    "uuid": "^8.3.2",
+    "uuid-v4-validator": "^2.0.0"
+  }
+}
