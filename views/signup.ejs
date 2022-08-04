@@ -1,0 +1,50 @@
+<%- include("header") -%>
+<!------------- Sign Up Form ------------>
+
+<div id="long-form" class="container-fluid form">
+
+  <img src="/images/signup-1.jpeg" alt="" style="padding-right:20px;" data-aos="fade-up" data-aos-duration="1000">
+
+  <form action="/signup" method="POST" data-aos="fade-left" data-aos-duration="1000">
+
+    <h1 class="form-name">Sign Up</h1>
+
+    <div class="form-group">
+      <label for="exampleInputEmail1">Email address</label>
+      <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" name="email">
+      <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+    </div>
+
+    <div class="form-group">
+      <label for="exampleInputEmail1">Username</label>
+      <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter username" name="username">
+    </div>
+
+    <div class="form-group">
+      <label for="exampleInputPassword1">Password</label>
+      <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password" name="password">
+    </div>
+
+    <div class="form-group">
+      <label for="exampleInputPassword1">Re-Enter Password</label>
+      <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password" name="repassword">
+    </div>
+
+    <button type="submit" class="form-button btn btn-inv">Sign Up</button>
+    <br>
+    <small id="emailHelp" class="form-text text-muted">Already have an account? <a href="/login">Log In</a></small>
+  </form>
+
+</div>
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+  AOS.init();
+</script>
+<script>
+  const Message = '<%=message%>'
+  if(Message!='')
+    alert(Message)
+</script>
+</body>
+
+</html>

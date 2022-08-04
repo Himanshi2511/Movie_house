@@ -1,7 +1,9 @@
 const express = require('express');
 const app = express();
+const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs')
 const session = require('express-session');
+const cors = require('cors');
 const mongoose = require('mongoose');
 const mongoDbSession = require('connect-mongodb-session')(session)
 
@@ -38,6 +40,23 @@ app.use(session({
   store: store
 }))
 
+// ---------------------------------------------------------------------
+// -----------------------------USER AUTH-------------------------------
+// ---------------------------------------------------------------------
+// Function to check if user is logged in or not
+const isAuth = function(req, res, next) {
+  if (req.session.isAuth) {
+    next()
+  } else {
+    req.session.error = '';
+    res.render('login', {
+      isAuth: req.session.isAuth,
+      message: "You are not logged in!",
+      title: "Log In | "
+    })
+  }
+}
+
 
 
 
@@ -45,10 +64,39 @@ app.use(session({
 // -----------------------------GET ROUTES------------------------------
 // ---------------------------------------------------------------------
 app.get('/', function(req, res) {
+  req.session.error = '';
   res.render('home', {
+    isAuth: req.session.isAuth,
     title: ''
   });
 });
+
+
+app.get('/login', function(req, res) {
+  if (req.session.isAuth) { //if user is already logged in redirects to the dashboard
+    req.session.error = '';
+    res.redirect('/dashboard')
+  } else {
+    res.render('login', {
+      isAuth: req.session.isAuth,
+      message: req.session.error,
+      title: "Log In |"
+    });
+  }
+})
+
+app.get('/signup', function(req, res) {
+  if (req.session.isAuth) { //if user is already logged in redirects to the dashboard
+    req.session.error = '';
+    res.redirect('/dashboard')
+  } else {
+    res.render('signup', {
+      isAuth: req.session.isAuth,
+      message: req.session.error,
+      title: "Sign Up | "
+    })
+  }
+})
 
 
 app.get('/contactus', function(req, res) {
@@ -61,7 +109,7 @@ app.get('/contactus', function(req, res) {
 
 const PORT = process.env.PORT || 3000
 
-server.listen(PORT, function() {
+app.listen(PORT, function() {
   console.log(`Server started at port ${PORT}`);
 })
 
