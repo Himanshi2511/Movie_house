@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <title><%=title%>Movie_house</title>
+
+  <!-- Favicon Links
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon_io/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon_io/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon_io/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest"> -->
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+  <!-- AOS link -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+  <!-- Google Font Links -->
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Handlee&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Merienda&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Oxygen&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Link -->
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+
+  <!-- CSS Links -->
+  <link rel="stylesheet" href="/css/style.css">
+
+  <!-- Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+  <!-- jQuery Link -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="/js/header.js"></script>
+</head>
+
+<body>
+  <!-- Start of Navbar -->
+  <div id="navbar" class="container-fluid">
+    <nav class="navbar navbar-expand-md fixed-top ">
+      <div class="container-fluid">
+        <a class="navbar-brand mb-0 h1" href="/">0range cube</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-md-0">
+            <!-- <li>
+              <div class="form-outline">
+                <input type="search" id="form1" class="form-control" placeholder="Search movie" aria-label="Search" />
+              </div>
+           </li> -->
+           <form action="/search" method="post" class="form-inline" id="search_form">
+            <input class="form-control mr-sm-2" name="text" type="text" placeholder="Search" aria-label="Search" id="search_val">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="submit" value="Search"><i class="fas fa-search"></i></button>
+          </form>
+           <li class="nav-itme"><span><src></src></span></li>
+            <li class="nav-item"><a href="/joinmeet" class="nav-link">Join Room</a></li>
+            <li class="nav-item"><a href="/hostmeet" class="nav-link">Host Room</a></li>
+            <%if(isAuth){%>
+              <li class="nav-item"><a href="/joingroup" class="nav-link">Join Group</a></li>
+              <li class="nav-item"><a href="/group" class="nav-link">Create Group</a></li>
+              <li class="nav-item"><a href="/dashboard" class="nav-link">Dashboard</a></li>
+              <li class="nav-item"><a href="/logout" class="nav-link">Logout</a></li>
+              <%}else{%>
+              <li class="nav-item"><a href="/signup" class="nav-link">Sign Up</a></li>
+              <li class="nav-item"><a href="/login" class="nav-link">Log In</a></li>
+              <%}%>
+          
+          <li class="nav-item"><a href="/contactus" class="nav-link">Contact Us</a></li>
+          <li class="nav-item"><a href="/help" class="nav-link">Help</a> 
+          </li>
+        </ul>
+  </div>
+    </div>
+  </nav>
+
+  </div>
+  <script>
+  $(document).scroll(function() {
+
+        if($(window).scrollTop() === 0) {
+          $(".navbar").removeClass('navbar-dark');
+   }
+   else{
+     $(".navbar").addClass('navbar-dark');
+   }
+
+     });
+  </script>
+  <!-- End of Navbar -->
