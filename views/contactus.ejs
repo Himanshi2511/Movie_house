@@ -1,0 +1,39 @@
+<%- include("header") -%>
+<!------------- Contact Us Form ------------>
+
+<div id="form" class="container-fluid form">
+
+  <form action="/contactus" method="POST" data-aos="fade-right" data-aos-duration="1000">
+
+    <h1 class="form-name">Contact Us</h1>
+
+    <div class="form-group">
+      <label>Subject</label>
+      <input type="text" class="form-control" name="subject">
+    </div>
+
+    <div class="form-group">
+      <label for="exampleFormControlTextarea1" class="form-label">FeedBack</label>
+      <textarea name="feedback" class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+    </div>
+
+    <button type="submit" class="form-button btn btn-inv">Send </button>
+    <small id="emailHelp" class="form-text text-muted">Have a complaint? Mail us at <a>movie_house@gmail.com</a></small>
+
+
+  </form>
+
+  <img src="/images/contact.jpeg" alt="" style="padding-right:20px;" data-aos="fade-down" data-aos-duration="1000">
+
+</div>
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+  AOS.init();
+  const Message = '<%=message%>'
+  if (Message != '')
+    alert(Message)
+</script>
+
+</body>
+
+</html>
