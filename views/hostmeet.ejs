@@ -1,0 +1,46 @@
+<%- include("header") -%>
+<!----- Form to create a new meet ------->
+
+<div id="form" class="container-fluid form">
+<div class="row" >
+  <form action="/hostmeet/<%= meetId%>" method="POST" data-aos="fade-right" data-aos-duration="1000">
+    <h1 class="form-name">Host a Room</h1>
+    <div class="form-group">
+      <label>Name</label>
+      <input type="text" class="form-control" name="name">
+    </div>
+    <div class="form-group">
+      <label>Meet ID</label>
+      <div class="card">
+        <div class="form-control">
+          <%= meetId %>
+        </div>
+      </div>
+      <small id="emailHelp" class="form-text text-muted">Share this link or <a href="/joinmeet">join another Meet</a></small>
+
+    </div>
+    <div class="form-check form-switch">
+      <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="video" checked>
+      <label class="form-check-label" for="flexSwitchCheckDefault">Video</label>
+    </div>
+    <div class="form-check form-switch">
+      <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" name="audio" checked>
+      <label class="form-check-label" for="flexSwitchCheckChecked">Audio</label>
+    </div>
+    <br>
+    <button type="submit" class="form-button btn btn-inv">Host Room</button>
+  </form>
+  <img src="/images/cafe-1.jpeg" alt="" data-aos="fade-down" data-aos-duration="1000">
+</div>
+
+
+
+</div>
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+  AOS.init();
+</script>
+
+</body>
+
+</html>

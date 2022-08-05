@@ -1,0 +1,46 @@
+<%- include("header") -%>
+<!---------- Form to create new meet inside a group --------->
+
+<div id="long-form" class="container-fluid form">
+
+  <img src="/images/meet-1.jpeg" alt="" data-aos="fade-right" data-aos-duration="1000">
+
+  <form action="/createmeet/<%=groupid%>" method="POST" data-aos="fade-down" data-aos-duration="1000">
+
+    <h1 class="form-name">Create Room</h1>
+
+    <div class="form-group">
+      <label>Room Name</label>
+      <input type="text" class="form-control" name="name">
+    </div>
+
+    <div class="form-group">
+      <label for="exampleFormControlTextarea1" class="form-label">Room Details</label>
+      <textarea name="details" class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Meet Start Date & Time:</label><br />
+      <input type="datetime-local" id="meeting-time" name="start"> </div>
+
+    <div class="form-group">
+      <label>Meet End Date & Time:</label><br />
+      <input type="datetime-local" id="meeting-time" name="end" > </div>
+
+    <br>
+    <button type="submit" class="form-button btn btn-inv">Create Room</button>
+  </form>
+
+</div>
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+  AOS.init();
+</script>
+<script>
+  const Message = '<%=message%>'
+  if (Message != '')
+    alert(Message)
+</script>
+</body>
+
+</html>
