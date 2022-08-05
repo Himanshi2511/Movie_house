@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs')
 const session = require('express-session');
 const cors = require('cors');
+const server = require('http').Server(app); //Because we want to reuse the HTTP server for socket.io
+const io = require('socket.io')(server);
 const mongoose = require('mongoose');
 const mongoDbSession = require('connect-mongodb-session')(session)
 

@@ -1,0 +1,44 @@
+<%- include("header") -%>
+
+<!----- Form to join an existing meet with the id ------->
+
+
+<div id="form" class="container-fluid form">
+
+  <img src="/images/join-1.jpeg" alt="" style="padding-right:20px;" data-aos="fade-up" data-aos-duration="1000">
+  <form action="/joinmeet" method="POST" data-aos="fade-left" data-aos-duration="1000">
+    <h1 class="form-name">Join a Room</h1>
+    <div class="form-group">
+      <label>Name</label>
+      <input type="text" class="form-control" name="name">
+    </div>
+    <div class="form-group">
+      <label>Meet ID</label>
+      <input type="text" class="form-control" name="meetid">
+      <small id="emailHelp" class="form-text text-muted">Ask your host for the Meet Id or <a href="/hostmeet">host your own Meet</a></small>
+    </div>
+    <div class="form-check form-switch">
+      <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="video" checked>
+      <label class="form-check-label" for="flexSwitchCheckDefault">Video</label>
+    </div>
+    <div class="form-check form-switch">
+      <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" name="audio" checked>
+      <label class="form-check-label" for="flexSwitchCheckChecked">Audio</label>
+    </div>
+    <br>
+    <button type="submit" class="form-button btn btn-inv">Join Room</button>
+  </form>
+
+</div>
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+  AOS.init();
+</script>
+<script>
+  const Message = '<%=message%>'
+  if (Message != '')
+    alert(Message)
+</script>
+</body>
+
+</html>
