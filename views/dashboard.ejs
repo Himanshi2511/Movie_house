@@ -1,0 +1,61 @@
+ <%- include("header") -%>
+<%- include("dashboard-top") -%>
+  <% if(groups.length!=0){%>
+<div class="main-bar">
+
+  <% console.log(user) %>
+    <% if(meets.length!=0){%>
+
+      <% meets.forEach(function(meet) {%>
+        <% if(meet.status==0){%>
+          <div class="mdetails">
+        <% } else {%>
+          <div class="mdetails" style="text-decoration:line-through;">
+        <%}%>
+
+        <h4 class="gdetails"><%= meet.meetname%></h4>
+        <p class="subgdetails">Created By: <%=meet.meethost%></p>
+        <p class="subgdetails"><%= meet.meetdetails%><br></p>
+        <small class="create-button">Start Time: <%=meet.startdate%> <%=meet.starttime%><br>End Time:     <%=meet.enddate%> <%=meet.endtime%></small>
+        <button type="button" class="btn btn-sm"><a class="dash-link" href="/meet/<%=meet._id%>/<%=meet.meetname%>">Join</a></button>
+        <button type="button" class="btn btn-sm"><a class="dash-link" href="/chat/<%=thisgroup._id%>/<%=meet._id%>">Chat</a></button>
+        <button type="button" class="btn btn-sm"><a class="dash-link" href="/reminder/<%=thisgroup._id%>/<%=meet._id%>">Remind</a></button>
+        <% if(meet.status==0){%>
+          <button type="button" class="btn btn-secondary btn-sm"><a class="dash-link" href="/cancelmeet/<%=thisgroup._id%>/<%=meet._id%>">Cancel</a></button>
+        <% } else {%>
+          <button type="button" class="btn btn-secondary btn-sm"><a class="dash-link" href="/undomeet/<%=thisgroup._id%>/<%=meet._id%>">Undo Cancel</a></button>
+        <%}%>
+        </div>
+      <%})%>
+    <%} else {%>
+      <!--If no meets formed -->
+    <% } %>
+        <%}%>
+        <% if(thisgroup!=''){%>
+          <div class="dashcontrols">
+            <button class="nav-link create-button btn" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <i class="fas fa-cogs "></i>
+            </button>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+              <a class="dropdown-item" href="/leave/<%=thisgroup._id%>">Leave Group</a>
+              <a class="dropdown-item" onclick="details()">Group Details</a>
+            </div>
+            <form action="/createmeet/<%=thisgroup._id%>" method="get">
+              <button title="New Meet" class="create-button btn" id="navbarDropdownMenuLink" aria-haspopup="true" aria-expanded="false">
+                New Meet <i class="fas fa-video "></i>
+              </button>
+            </form>
+          </div>
+        <%}else if(groups.length!=0){%>
+          <br>
+          <p class="dashhead" data-aos="fade-up" data-aos-duration="1000">Select a group and see what's going on!!</p>
+          <img src="/images/hello-1.jpeg" alt="" data-aos="fade-up" data-aos-duration="1000">
+          <p data-aos="fade-up" data-aos-duration="1000" class="dashhead">Also can <a href="/group">create</a> or <a href="/joingroup">join</a> a new group</p>
+        <%}%>
+      </div>
+
+
+
+<%- include("dashboard-down") -%>
+
+

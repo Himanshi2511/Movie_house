@@ -1,0 +1,39 @@
+
+
+
+  <% if(thisgroup!=''){%>
+  <div id="hide-bar">
+    <a class="navbar-brand"><%=thisgroup.groupname%></a>
+    <div id="link">
+      <div class="card">
+        <div class="cafe-card card-body">
+          Group Key: <small class="text-muted"><%= thisgroup.groupkey %></small>
+        </div>
+      </div>
+    </div>
+    <br>
+    <ul class="list-group">Members:</ul>
+      <% members.forEach(function(member){%>
+        <li class="list-group-item"><%=member.username%></li>
+      <%})%>
+  </div>
+  <%}%>
+  <!-- Start of Script Tags -->
+          <script src="/js/dashboard.js" charset="utf-8"></script>
+  <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+  <script>
+    AOS.init();
+  </script>
+  <script>
+    const Message = '<%=message%>'
+    if (Message != '')
+      alert(Message)
+  </script>
+
+  <script>
+    document.getElementsByClassName("main-bar")[0].scroll(0, 5000)
+  </script>
+  <!-- End of Script Tags -->
+  </body>
+
+  </html>
