@@ -47,6 +47,7 @@ Schema.once('open', function() {
 app.use(bodyParser.urlencoded({
   extended: true
 }));
+app.use('/peerjs', peerServer);
 app.use(express.static('static'));
 app.set('view engine', 'ejs');
 app.use(cors());
@@ -290,6 +291,86 @@ app.post('/hostmeet/:meet', function(req, res) {
     res.redirect('/hostmeet')
   }
 })
+
+
+app.post('/signup', async function(req, res) {
+  let email = req.body.email;
+  let username = req.body.username;
+  let password = req.body.password;
+  let repassword = req.body.repassword;
+  console.log(email,username,password)
+  if (email == "" || username == "" || password == "") { //Input cannot be blank
+    return res.render('signup', {
+      isAuth: req.session.isAuth,
+      message: "Please Input Every Data!",
+      title: 'Sign Up | '
+    })
+  }
+  if (password != repassword) { //Equate the two passwords
+    return res.render('signup', {
+      isAuth: req.session.isAuth,
+      message: "Passwords do not match.",
+      title: 'Sign Up | '
+    })
+  }
+  let foundUser = await User.findOne({ //Shouldn't be an existing user
+    email: email
+  });
+  if (foundUser) {
+    req.session.error = ""
+    return res.render('signup', {
+      isAuth: req.session.isAuth,
+      message: "User Already Exists!",
+      title: 'Sign Up | '
+    });
+  }
+  const hashedPsw = await bcrypt.hash(password, 5); //hashing
+
+  const user = new User({
+    email: email,
+    username: username,
+    password: hashedPsw
+  });
+  await user.save();
+  req.session.isAuth = true;
+  req.session.user = user._id;
+  req.session.error = "Welcome " + username + " !"
+  res.redirect('/dashboard');
+})
+app.post('/login', async function(req, res) {
+  let email = req.body.email;
+  let password = req.body.password;
+  let user = await User.findOne({ //Checks if the user exists
+    email: email
+  }, function(err, user) {
+    if (!user) {
+      req.session.error = "";
+      return res.render("signup", {
+        isAuth: req.session.isAuth,
+        message: "User Does Not Exist",
+        title: "Sign Up | "
+      });
+    }
+  })
+
+  const isMatch = await bcrypt.compare(password, user.password)
+  if (isMatch) {
+    req.session.isAuth = true;
+    req.session.user = user._id;
+    req.session.error = "Welcome " + user.username + " !"
+    res.redirect('/dashboard');
+  } else {
+    req.session.error = "";
+    res.render("login", {
+      isAuth: req.session.isAuth,
+      message: 'Incorrect Password',
+      title: 'Log In |'
+    });
+  }
+})
+
+
+
 
 
 const PORT = process.env.PORT || 3000

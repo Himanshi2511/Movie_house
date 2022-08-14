@@ -1,0 +1,28 @@
+<%- include("header") -%>
+<%- include("dashboard-top") -%>
+<!-- Dashboard Chat -->
+<div class="main-bar">
+  <div class="header">
+    <h6>Notifications</h6>
+  </div>
+  <div class="all-notification">
+    <ul class="notifications">
+      <% chats.forEach(function(chat){ %>
+      <li class="message"><small><b><%=chat.user%></b></small><br /><%=chat.text%></li>
+      <% }) %>
+    </ul>
+  </div>
+  <div class="send-message">
+    <input id="chat-message" type="text" placeholder="Type message here...">
+  </div>
+</div>
+
+<script src="https://engage-keep-in-touch.herokuapp.com/socket.io/socket.io.js"></script>
+<script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+<script>
+  const MeetId = '<%= meet._id %>';
+  const UserName = '<%= userName %>';
+</script>
+
+<script src="/js/chatdashboard.js" charset="utf-8"></script>
+<%- include("dashboard-down") -%>

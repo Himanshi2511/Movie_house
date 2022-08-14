@@ -1,0 +1,105 @@
+<%- include("header") -%>
+
+
+
+
+<div id="link" class="container-fluid">
+  <div class="card">
+    <div class="meet-card card-body">
+      Meet Id: <small class="text-muted"><%= meetId %></small>
+    </div>
+  </div>
+</div>
+
+
+<div id="media">
+
+  <div class="media-left" style="background-color:#000; color:#fff;">
+    <div id="link-bar">
+
+    </div>
+    <div class="videos" class="container">
+      <div id="video-grid" class="row">
+      </div>
+    </div>
+  </div>
+  <div class="media-right" style="background-color:#000; color:#fff;">
+    <button title="Participants" onclick="participants()" class="row controls-button">
+      <i class="fas fa-user-friends fa-1x"></i>
+    </button>
+    <button title="Stop Video" onclick="videoStop()" class="row controls-button">
+      <i class="fas fa-video"></i>
+    </button>
+    <button title="Mute Audio" onclick="audioStop()" class="row controls-button">
+      <i class="fas fa-microphone"></i>
+    </button>
+    <button title="Share Screen" onclick="screenShare()" class="row controls-button">
+      <i class="fab fa-slideshare"></i>
+    </button>
+    <button title="Mute All" onclick="muteOthers()" class="row controls-button" style="padding:0px 3px;">
+      <small>Mute All</small>
+    </button>
+    <button title="Chat" onclick="sendmessage()" class="row controls-button">
+      <i class="fas fa-comments"></i>
+    </button>
+    <button title="Hang Up" class="row controls-button">
+      <a href="/hangup"><i class="fas fa-phone-slash" style="color:red;"></i></a>
+    </button>
+  </div>
+  <div id="chat" style="background-color:#000; color:#fff;">
+    <div class="header">
+      <h6>Notifications</h6>
+
+    </div>
+    <div class="all-notification">
+      <ul class="notifications">
+        <% chats.forEach(function(chat){
+          if(chat.user==userName) {%>
+            <li class="message user-message"><small><b>You</b></small><br/><%=chat.text%></li>
+
+          <% }else{ %>
+                    <li class="message"><small><b><%=chat.user%></b></small><br/><%=chat.text%></li>
+        <% }}) %>
+      </ul>
+    </div>
+    <div class="send-message-dark">
+      <input id="chat-message" type="text" placeholder="Type message here...">
+    </div>
+  </div>
+  <div id="participants" style="background-color:#000; color:#fff;">
+    <div class="header">
+      <h6>Participants</h6>
+    </div>
+    <div class="all-notification">
+      <ul class="users">
+
+      </ul>
+    </div>
+  </div>
+</div>
+<audio autoplay id="audio">
+  <source src="/audio/Enter.mp3" type="audio/mp3">
+
+</audio>
+<script src="https://engage-keep-in-touch.herokuapp.com/socket.io/socket.io.js"></script>
+  <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+<script>
+  const MeetId = '<%= meetId %>';
+  const UserName = '<%= userName %>';
+  let Video = <%= video %> ;
+  let Audio = <%= audio %> ;
+
+  let peers = {} //Stores call data of each peer
+  let users = new Set() // stores sll userids
+  let usernames = new Map() // store details of users
+
+  console.log(Video + '::' + Audio)
+</script>
+<script src="/js/meet.js"></script>
+
+<script>
+
+</script>
+</body>
+
+</html>
