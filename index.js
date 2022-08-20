@@ -370,6 +370,88 @@ app.post('/login', async function(req, res) {
 })
 
 
+// ---------------------------------------------------------------------
+// -----------------------------SOCKET----------------------------------
+// ---------------------------------------------------------------------
+// All connections for the meet
+io.on('connection', socket => {
+  socket.on('entermeet', function(meetId, userId, userName) {
+    socket.join(meetId); //join this meet
+    socket.to(meetId).emit('entermeet', userId, userName);
+    socket.on('displayscreen', function(userId, display) {
+      socket.to(meetId).emit('displayscreen', userId, display);
+    })
+    //To implement the chat feature
+    socket.on('message', (message, userId, userName) => {
+      const chat = new Chat({
+        user: userName,
+        text: message
+      })
+      chat.save()
+      Meet.findOne({
+        _id: meetId,
+      }, function(err, meet) {
+        if (!err) {
+          meet.chats.push(chat._id)
+          meet.save()
+        }
+      })
+      io.to(meetId).emit('message', message, userId, userName)
+    });
+    //To stop a user's video from being shared
+    socket.on('stopvideo', function(userId, userName) {
+      io.to(meetId).emit('stopvideo', userId, userName);
+    })
+    //To share a user's video
+    socket.on('startvideo', function(userId, userName) {
+      io.to(meetId).emit('startvideo', userId, userName);
+    })
+    //To mute all users except the one called for this
+    socket.on('muteOthers', function(userId, userName) {
+      io.to(meetId).emit('muteOthers', userId, userName);
+    })
+
+    socket.on('screenshare', function(userId, userName) {
+      io.to(meetId).emit('screenshare', userId, userName);
+    })
+    //To notify that a user is sharing screen
+    socket.on('startdisplay', function(userId, userName) {
+      io.to(meetId).emit('startdisplay', userId, userName);
+    })
+    //To share name and get name of all users
+    socket.on('ourname', function(userId, userName) {
+      io.to(meetId).emit('ourname', userId, userName);
+    })
+    //Shares that a user has disconnected
+    socket.on('disconnect', function() {
+      socket.to(meetId).emit('leavemeet', userId, userName)
+    })
+  });
+})
+// All connectios for the drawing meet
+io.on('connection', socket => {
+  socket.on('enter', function(meetId) {
+    socket.join(meetId)
+    socket.to(meetId).emit('enter');
+    socket.on('drawing', function(data) {
+      io.to(meetId).emit('drawing', data);
+    })
+    socket.on('refresh', function() {
+      io.to(meetId).emit('refresh');
+    })
+  })
+});
+// All Connections for the screensharing meet
+io.on('connection', socket => {
+  socket.on('display', function(meetId, userId, userName) { //Second
+    socket.join(meetId); //join this meet
+    socket.to(meetId).emit('display', userId, userName);
+  });
+});
+
+
+
+
 
 
 
