@@ -63,7 +63,17 @@ app.use(session({
 // ---------------------------------------------------------------------
 // -------------------------------SCHEMAS-------------------------------
 // ---------------------------------------------------------------------
-
+let ChatSchema = new mongoose.Schema({
+  user: {
+    type: String,
+    required: true
+  },
+  text: {
+    type: String,
+    required: true
+  }
+})
+const Chat = mongoose.model("Chat", ChatSchema);
 
 let MeetSchema = new mongoose.Schema({
   meetname: {
@@ -93,7 +103,13 @@ let MeetSchema = new mongoose.Schema({
   endtime: {
     type: String,
     required: true
-  }
+  },
+  status: Number, //Check for the meet is cancelled or not
+  reminder: Number, //When the server reminds the users of this meet at the 'starttime' it changes this to 1
+  chats: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Chat'
+  }]
 
 })
 
@@ -162,6 +178,20 @@ app.get('/joinmeet', function(req, res) {
   });
 })
 
+app.get('/share/:meet', function(req, res) {
+  res.render('sharescreen', {
+    title: "Screen | ",
+    meetId: req.params.meet,
+    isAuth: req.session.isAuth,
+  });
+})
+app.get('/display/:meet', function(req, res) {
+  res.render('displayscreen', {
+    meetId: req.params.meet,
+    isAuth: req.session.isAuth,
+    title: "Screen | "
+  });
+})
 
 app.get('/login', function(req, res) {
   if (req.session.isAuth) { //if user is already logged in redirects to the dashboard

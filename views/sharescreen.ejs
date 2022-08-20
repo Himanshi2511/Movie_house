@@ -1,0 +1,34 @@
+<%- include("header") -%>
+
+
+
+<div id="link" class="container-fluid">
+  <div class="card">
+    <div class="meet-card card-body">
+      Meet Id: <small class="text-muted"><%= meetId %></small>
+    </div>
+  </div>
+</div>
+
+
+<div id="media" class="container-fluid">
+
+    <div class="videos">
+      <div id="video-main-grid">
+
+      </div>
+    </div>
+
+
+
+</div>
+
+<script src="https://engage-keep-in-touch.herokuapp.com/socket.io/socket.io.js"></script>
+  <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+<script>
+  const MeetId = '<%= meetId %>';
+</script>
+<script src="/js/screen.js"></script>
+</body>
+
+</html>
