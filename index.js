@@ -115,6 +115,23 @@ let MeetSchema = new mongoose.Schema({
 
 const Meet = mongoose.model("Meet", MeetSchema);
 
+let UserSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  }
+})
+const User = mongoose.model("User", UserSchema);
+
 
 
 // ---------------------------------------------------------------------
@@ -185,6 +202,7 @@ app.get('/share/:meet', function(req, res) {
     isAuth: req.session.isAuth,
   });
 })
+
 app.get('/display/:meet', function(req, res) {
   res.render('displayscreen', {
     meetId: req.params.meet,
@@ -387,7 +405,7 @@ app.post('/login', async function(req, res) {
   if (isMatch) {
     req.session.isAuth = true;
     req.session.user = user._id;
-    req.session.error = "Welcome " + user.username + " !"
+    // req.session.error = "Welcome " + user.username + " !"
     res.redirect('/dashboard');
   } else {
     req.session.error = "";
