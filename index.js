@@ -238,6 +238,8 @@ app.get('/signup', function(req, res) {
 })
 
 
+
+
 app.get('/meet/:meet/:title', isAuth, function(req, res) {
   let meetId = req.params.meet
   let title = req.params.title + " | "
@@ -306,6 +308,91 @@ app.get('/contactus', function(req, res) {
       })
     })
   })
+
+
+  app.get('/dashboard', isAuth, function(req, res) {
+    User.findOne({ // Fetches all groups this user is a part of
+      _id: req.session.user
+    }).populate('groups').exec(function(err, user) {
+      if (err) {
+        res.render('login', {
+          isAuth: req.session.isAuth,
+          message: "You are not logged in!",
+          title: "Log In | "
+        })
+      } else {
+        // console.log(user)
+        const spawn = require("child_process").spawn;
+        const pythonProcess = spawn('python3',["./script.py", user.history]);
+          pythonProcess.stdout.on('data', (data) => {
+          console.log(data.toString())
+          });
+          // Handle error output
+          pythonProcess.stderr.on('data', (data) => {
+            // As said before, convert the Uint8Array to a readable string.
+            console.log(String.fromCharCode.apply(null, data));
+          });
+      
+          pythonProcess.on('exit', (code) => {
+            console.log("Process quit with code : " + code);
+          });
+  
+        let message = req.session.error;
+        req.session.error = ""
+        res.render('dashboard', {
+          groups: user.groups,
+          thisgroup: '',
+          meets: [],
+          members: [],
+          user: user,
+          message: message,
+          // history: history,
+          isAuth: req.session.isAuth,
+          title: 'Dashboard | '
+        })
+      }
+    })
+
+
+    app.get('/group', isAuth, function(req, res) { //Group creating route
+      res.render('creategroup', {
+        isAuth: req.session.isAuth,
+        message: '',
+        title: "Create Group | "
+      })
+    })
+    app.get('/joingroup', isAuth, function(req, res) { //Group joining route
+      res.render('joingroup', {
+        isAuth: req.session.isAuth,
+        message: '',
+        title: 'Join Group | '
+      })
+    })
+    
+    app.get("/leave/:group", isAuth, function(req, res) { //Group leaving route
+      const group = req.params.group;
+      const user = req.session.user;
+      User.findOneAndUpdate({
+          _id: user
+        }, {
+          $pull: {
+            groups: group
+          }
+        },
+        function(err, foundList) {
+          if (!err) {
+            res.redirect("/dashboard");
+          } else {
+            req.session.destroy((err) => {
+              res.render('login', {
+                isAuth: req.session.isAuth,
+                message: "You are not logged in!",
+                title: "Log In |"
+              });
+            })
+          }
+        });
+    });
 // ---------------------------------------------------------------------
 // -----------------------------POST ROUTES------------------------------
 // ---------------------------------------------------------------------
