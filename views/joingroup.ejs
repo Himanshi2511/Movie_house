@@ -1,0 +1,38 @@
+<%- include("header") -%>
+<!------------ Form to join an existing group ---------->
+
+<div id="form" class="container-fluid form">
+
+  <img src="/images/create-1.jpeg" alt="" style="padding-right:20px;"  data-aos="fade-right" data-aos-duration="1000">
+
+  <form action="/joingroup" method="POST" data-aos="fade-up" data-aos-duration="1000">
+    <h1 class="form-name">Join Group</h1>
+
+    <div class="form-group">
+      <label>Group Name</label>
+      <input type="text" class="form-control" name="name">
+    </div>
+
+    <div class="form-group">
+      <label>Group Key</label>
+      <input type="text" class="form-control" name="key">
+      <small id="emailHelp" class="form-text text-muted">Ask the group creator for the key or <a href="/group">create your own group</a>.</small>
+    </div>
+    <br>
+
+    <button type="submit" class="form-button btn btn-inv">Join Group</button>
+  </form>
+
+</div>
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+  AOS.init();
+</script>
+<script>
+  const Message = '<%=message%>'
+  if (Message != '')
+    alert(Message)
+</script>
+</body>
+
+</html>
