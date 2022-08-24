@@ -352,7 +352,7 @@ app.get('/contactus', function(req, res) {
         })
       }
     })
-
+  })
 
     app.get('/group', isAuth, function(req, res) { //Group creating route
       res.render('creategroup', {
