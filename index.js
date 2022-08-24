@@ -128,9 +128,35 @@ let UserSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-  }
+  },
+  history: {
+    type: String,
+    required: false,
+    default: 'Avatar'
+  },
+  groups: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Group'
+  }]
 })
 const User = mongoose.model("User", UserSchema);
+
+let GroupSchema = new mongoose.Schema({
+  groupname: {
+    type: String,
+    required: true
+  },
+  groupkey: {
+    type: String,
+    required: true
+  },
+  meets: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Meet'
+  }],
+
+})
+const Group = mongoose.model("Group", GroupSchema);
 
 
 
@@ -291,24 +317,6 @@ app.get('/hangup', function(req, res) {
 })
 
 
-app.get('/contactus', function(req, res) {
-    res.render('contactus', {
-      isAuth: req.session.isAuth,
-      message: "",
-      title: "Contact Us | "
-    })
-  })
-
-  app.get('/logout', function(req, res) {
-    req.session.destroy((err) => {
-      if (err) throw err;
-      res.render('logout', {
-        isAuth: false,
-        title: 'Log Out | '
-      })
-    })
-  })
-
 
   app.get('/dashboard', isAuth, function(req, res) {
     User.findOne({ // Fetches all groups this user is a part of
@@ -354,6 +362,84 @@ app.get('/contactus', function(req, res) {
     })
   })
 
+  app.get('/dashboard/:group', isAuth, async function(req, res) { //Group's Dashboard
+    let groups = [];
+    let members = await User.find({ //fetches members of this group
+      groups: req.params.group
+    }, function(err, members) {
+      if (!members) {
+        req.session.error = "Group doesn't exists!"
+        return res.redirect('/dashboard');
+      }
+    });
+  
+  
+    User.findOne({ // Fetches all groups this user is a part of
+      _id: req.session.user,
+      groups: req.params.group
+    }).populate('groups').exec(function(err, user) { //Fetches groups of this user
+      if (!user) { //If user is accessing this group wrongfully
+        req.session.error = 'Your are not part of this group!'
+        return res.redirect('/dashboard');
+      } else {
+        groups = user.groups;
+        Group.findOne({ //Fetches all the meets of this particular group
+          _id: req.params.group
+        }).populate('meets').exec(function(err, group) {
+          if (err || !group) {
+            res.redirect('/dashboard');
+          } else {
+            let message = req.session.error;
+            req.session.error = "";
+            res.render('dashboard', {
+              groups: groups,
+              thisgroup: group,
+              user: req.session.user,
+              meets: group.meets,
+              message: message,
+              members: members,
+              isAuth: req.session.isAuth,
+              title: group.groupname + " | "
+            })
+          }
+        })
+      }
+    });
+  })
+  app.get('/chat/:group/:meet', isAuth, function(req, res) { //Chat page of a meet
+    User.findOne({
+      _id: req.session.user,
+      groups: req.params.group
+    }).populate('groups').exec(function(err, user) {
+      if (!user) { //If the user is accessing a group wrongfully
+        req.session.error = "You are not part of this group!"
+        return res.redirect('/dashboard');
+      } else {
+        groups = user.groups;
+        userName = user.username;
+        Meet.findOne({ //Checks if the meet exists
+          _id: req.params.meet
+        }).populate('chats').exec(function(err, meet) {
+          if (err) {
+            req.session.error = "Meet does not exist!"
+            res.redirect('/dashboard');
+          } else {
+            res.render('chat', {
+              groups: groups,
+              thisgroup: '',
+              userName: userName,
+              meet: meet,
+              message: "",
+              chats: meet.chats,
+              isAuth: req.session.isAuth,
+              title: meet.meetname + " | "
+            })
+          }
+        })
+      }
+    })
+  })
+
     app.get('/group', isAuth, function(req, res) { //Group creating route
       res.render('creategroup', {
         isAuth: req.session.isAuth,
@@ -393,6 +479,25 @@ app.get('/contactus', function(req, res) {
           }
         });
     });
+  
+    app.get('/contactus', function(req, res) {
+      res.render('contactus', {
+        isAuth: req.session.isAuth,
+        message: "",
+        title: "Contact Us | "
+      })
+    })
+  
+    app.get('/logout', function(req, res) {
+      req.session.destroy((err) => {
+        if (err) throw err;
+        res.render('logout', {
+          isAuth: false,
+          title: 'Log Out | '
+        })
+      })
+    })
+  
 // ---------------------------------------------------------------------
 // -----------------------------POST ROUTES------------------------------
 // ---------------------------------------------------------------------
