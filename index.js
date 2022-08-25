@@ -479,6 +479,107 @@ app.get('/hangup', function(req, res) {
           }
         });
     });
+
+    app.get('/createmeet/:group', isAuth, async function(req, res) { //Meet creating route
+      let user = await User.findOne({ //Checks if the user is part of this group
+        _id: req.session.user,
+        groups: req.params.group
+      }, function(err, user) {
+        if (!user) {
+          req.session.error = "You are not part of this group!"
+          return res.redirect('/dashboard');
+        }
+      })
+      let message = req.session.error;
+      req.session.error = ""
+      res.render('createmeet', {
+        isAuth: req.session.isAuth,
+        groupid: req.params.group,
+        message: message,
+        title: "Create Meet | "
+      });
+    
+    })
+    app.get('/cancelmeet/:group/:meet', isAuth, async function(req, res) { //Cancels meet
+      let meet = await Meet.findOne({ //Checks if the meet exists
+        _id: req.params.meet
+      }, function(err, meet) {
+        if (!meet) {
+          req.session.error = "Meet does not exist!"
+          return res.redirect("/dashboard/" + req.params.group);
+        }
+      })
+    
+      let user = await User.findOne({ //Checks if the user is part of this group
+        _id: req.session.user,
+        groups: req.params.group
+      }, function(err, user) {
+        if (!user) {
+          req.session.error = "You are not part of this group!"
+          return res.redirect('/dashboard');
+        }
+      })
+    
+      Meet.updateOne({ //Sets status to one
+        _id: req.params.meet
+      }, {
+        $set: {
+          status: 1
+        }
+      }, function(err, foundMeet) {
+        if (!err) {
+          User.find({
+            groups: req.params.group
+          }, function(err, users) {
+            users.forEach(function(subuser) {
+              mail(user, subuser, meet, "cancel")
+            })
+            req.session.error = "";
+            res.redirect('/dashboard/' + req.params.group)
+          })
+        }
+      })
+    })
+    app.get('/undomeet/:group/:meet', isAuth, async function(req, res) { //Undo cancel meet
+      let meet = await Meet.findOne({ //Checks if the meet exist
+        _id: req.params.meet
+      }, function(err, meet) {
+        if (!meet) {
+          req.session.error = "Meet does not exist!"
+          return res.redirect("/dashboard/" + req.params.group);
+        }
+      })
+    
+      let user = await User.findOne({ //Checks if the user is part of this meet
+        _id: req.session.user,
+        groups: req.params.group
+      }, function(err, user) {
+        if (!user) {
+          req.session.error = "You are not part of this group!"
+          return res.redirect('/dashboard');
+        }
+      })
+    
+      Meet.updateOne({ //Set status to 0
+        _id: req.params.meet
+      }, {
+        $set: {
+          status: 0
+        }
+      }, function(err, foundMeet) {
+        if (!err) {
+          User.find({
+            groups: req.params.group
+          }, function(err, users) {
+            users.forEach(function(subuser) {
+              mail(user, subuser, meet, "undocancel")
+            })
+            req.session.error = "";
+            res.redirect('/dashboard/' + req.params.group)
+          })
+        }
+      })
+    })
   
     app.get('/contactus', function(req, res) {
       res.render('contactus', {
@@ -573,6 +674,111 @@ app.post('/hostmeet/:meet', function(req, res) {
     res.redirect('/hostmeet')
   }
 })
+
+app.post('/joingroup', isAuth, async function(req, res) {
+  let name = req.body.name;
+  let key = req.body.key;
+  let group = await Group.findOne({ //Checks if the entered data matches
+    groupname: name,
+    groupkey: key
+  }, function(err, group) {
+    if (!group) {
+      req.session.error = "";
+      return res.render('joingroup', {
+        isAuth: req.session.isAuth,
+        message: "Recheck name and key!",
+        title: "Join Group | "
+      })
+    }
+  });
+
+  let ispart = await User.findOne({ //If user is already part of the group
+    _id: req.session.user,
+    groups: group._id
+  }, function(err, ispart) {
+    if (ispart) {
+      req.session.error = "You are already in the group!";
+      return res.redirect('/dashboard/' + group._id)
+    }
+  })
+
+  User.findOne({ //Else adds it to his/her groups list
+    _id: req.session.user,
+  }, function(err, foundUser) {
+    if (err) {
+      return res.redirect('/joingroup');
+    }
+    foundUser.groups.push(group._id);
+    foundUser.save();
+    req.session.error = "";
+    res.redirect('/dashboard/' + group._id)
+  })
+
+})
+
+app.post('/createmeet/:group', isAuth, async function(req, res) {
+  let groupid = req.params.group;
+  let name = req.body.name;
+  let details = req.body.details;
+  let start = req.body.start;
+  let end = req.body.end;
+
+  if (name == "" || details == "") { //Checks if nothing is blank
+    return res.redirect('/createmeet/' + groupid);
+  }
+  let members = await User.find({ //Checks if there are any members
+    groups: req.params.group
+  }, function(err, members) {
+    if (!members) {
+      req.session.error = "Group does not exist!";
+      return res.redirect("/dashboard")
+    }
+
+  })
+
+  let group = await Group.findOne({ //Checks if the group exists
+    _id: groupid
+  }, function(err, group) {
+    if (!group) {
+      req.session.error = "Group does not exist!";
+      return res.redirect("/dashboard")
+    }
+  })
+
+  User.findOne({ //If the user is part of this group
+    _id: req.session.user,
+    groups: groupid
+  }).populate('groups').exec(function(err, user) {
+    if (!user) {
+      return res.redirect('/dashboard' + groupid)
+    } else if (err) {
+      return res.redirect("/dashboard");
+    }
+    const meet = new Meet({
+      meetname: name,
+      meethost: user.username,
+      meetdetails: details,
+      startdate: start.slice(0, 10),
+      starttime: start.slice(11, 16),
+      enddate: end.slice(0, 10),
+      endtime: end.slice(11, 16),
+      status: 0,
+      reminder: 0,
+
+    })
+    meet.save()
+    group.meets.push(meet._id);
+    group.save();
+
+    members.forEach(function(member) { //Sends an invite mail to each user
+      mail(user, member, meet, "invite")
+    })
+    req.session.error = "New Meet Created!"
+    res.redirect('/dashboard/' + group._id)
+  })
+
+})
+
 
 
 app.post('/signup', async function(req, res) {
