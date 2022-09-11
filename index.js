@@ -716,6 +716,53 @@ app.post('/joingroup', isAuth, async function(req, res) {
 
 })
 
+app.post('/group', isAuth, function(req, res) {
+  let name = req.body.name;
+  let key = req.body.key;
+
+  Group.findOne({ //Checks if the groupname is already taken or not
+    groupname: name
+  }, function(err, foundGroup) {
+    if (foundGroup) {
+      req.session.error = ""
+      return res.render('creategroup', {
+        isAuth: req.session.isAuth,
+        message: "Sorry! Group Name already taken!",
+        title: "Create Group | "
+      });
+    } else {
+      if (name == "" || key == "") {
+        req.session.error = ""
+        return res.render('creategroup', {
+          isAuth: req.session.isAuth,
+          message: "Please Input all Data",
+          title: "Create Group | "
+        });
+      } else {
+        User.findOne({
+          _id: req.session.user
+        }, function(err, foundUser) {
+          if (err) {
+            req.session.error = "User logged out!"
+            res.redirect('/login');
+          } else {
+            const group = new Group({
+              groupname: name,
+              groupkey: key
+            });
+            group.save();
+            foundUser.groups.push(group._id);
+            foundUser.save();
+            res.redirect('/dashboard/' + group._id)
+          }
+        })
+      }
+    }
+  });
+
+
+})
+
 app.post('/createmeet/:group', isAuth, async function(req, res) {
   let groupid = req.params.group;
   let name = req.body.name;
@@ -937,6 +984,64 @@ io.on('connection', socket => {
   });
 });
 
+app.post('/search', (req, res) => {
+  
+  // console.log(req.body.text)
+  const spawn = require("child_process").spawn;
+  const pythonProcess = spawn('python3',["./script.py", req.body.text]);
+    pythonProcess.stdout.on('data', (data) => {
+    console.log(data.toString())
+    });
+    // Handle error output
+    pythonProcess.stderr.on('data', (data) => {
+      // As said before, convert the Uint8Array to a readable string.
+      console.log(String.fromCharCode.apply(null, data));
+    });
+
+    pythonProcess.on('exit', (code) => {
+      console.log("Process quit with code : " + code);
+    });
+
+    let user = User.findOne({
+      _id: req.session.user,
+    }, function(err, user) {
+      if (user) {
+        let hist = req.body.text;
+        if (err) throw err;
+         
+          User.updateOne(
+            { _id: req.session.user },
+            { $set: { "history": req.body.text} });
+
+            User.findByIdAndUpdate(req.session.user, 
+              {
+                 $set : {
+                      history: hist,
+                  }
+              },
+              (err, user) => {
+                   if (err) console.log(err)
+                 }
+              );
+          // console.log(user)
+          res.render('search', {
+            isAuth: req.session.isAuth,
+            title: req.body.text
+          });
+      }
+      else{
+        // console.log("user.history");
+       
+        res.render('search', {
+          isAuth: req.session.isAuth,
+          title: req.body.text
+        });
+      }
+    })
+  
+    req.session.error = '';
+    
+})
 
 
 
