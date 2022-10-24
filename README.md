@@ -99,9 +99,9 @@ Movie_house is a web development project. It is designed and developed by Himans
 
 ## Credits:
 - Developer -
- [Shashank singh](https://github.com/Himanshi2511)
- [Shashank singh](https://github.com/singhshashank25)
- [Shashank singh](https://github.com/en1gm479)
+ - [Himanshi Sharma](https://github.com/Himanshi2511)
+ - [Shashank singh](https://github.com/singhshashank25)
+ - [Ankit Gupta](https://github.com/en1gm479)
  
 
 
