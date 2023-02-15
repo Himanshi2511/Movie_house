@@ -24,7 +24,11 @@ const mongoose = require('mongoose');
 const nodemailer = require("nodemailer")
 const cors = require('cors');
 const cron = require('node-cron');
-
+const isAuth = require("./middleware/auth");
+const Chat = require("./models/chat");
+const Meet = require("./models/meet");
+const Group = require("./models/group");
+const User = require("./models/user");
 
 const {
   v4: uuidV4
@@ -49,15 +53,16 @@ mongoose.connect(uri || "mongodb://localhost:27017/touchDB", {
   useNewUrlParser: true,
   useCreateIndex: true,
   useUnifiedTopology: true
-});
+}).then(() => console.log('DB connected successfully...'))
+.catch((err) => console.log('DB could not connect!\nError: ',err));
+
+
+
 const store = new mongoDbSession({
   uri: uri,
   collection: "sessions"
 })
-const Schema = mongoose.connection;
-Schema.once('open', function() {
-  console.log('Database Connected!')
-});
+
 
 app.use(bodyParser.urlencoded({
   extended: true
@@ -76,120 +81,8 @@ app.use(session({
 
 
 
-// ---------------------------------------------------------------------
-// -------------------------------SCHEMAS-------------------------------
-// ---------------------------------------------------------------------
-
-let ChatSchema = new mongoose.Schema({
-  user: {
-    type: String,
-    required: true
-  },
-  text: {
-    type: String,
-    required: true
-  }
-})
-const Chat = mongoose.model("Chat", ChatSchema);
-
-let MeetSchema = new mongoose.Schema({
-  meetname: {
-    type: String,
-    required: true
-  },
-  meethost: {
-    type: String,
-    required: true
-  },
-  meetdetails: {
-    type: String,
-    required: true
-  },
-  startdate: {
-    type: String,
-    required: true
-  },
-  starttime: {
-    type: String,
-    required: true
-  },
-  enddate: {
-    type: String,
-    required: true
-  },
-  endtime: {
-    type: String,
-    required: true
-  },
-  status: Number, //Check for the meet is cancelled or not
-  reminder: Number, //When the server reminds the users of this meet at the 'starttime' it changes this to 1
-  chats: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Chat'
-  }]
-})
-const Meet = mongoose.model("Meet", MeetSchema);
-
-let UserSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    required: true
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  history: {
-    type: String,
-    required: false,
-    default: 'Avatar'
-  },
-  groups: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Group'
-  }]
-})
-const User = mongoose.model("User", UserSchema);
-
-let GroupSchema = new mongoose.Schema({
-  groupname: {
-    type: String,
-    required: true
-  },
-  groupkey: {
-    type: String,
-    required: true
-  },
-  meets: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Meet'
-  }],
-
-})
-const Group = mongoose.model("Group", GroupSchema);
-
-
-// ---------------------------------------------------------------------
-// -----------------------------USER AUTH-------------------------------
-// ---------------------------------------------------------------------
 // Function to check if user is logged in or not
-const isAuth = function(req, res, next) {
-  if (req.session.isAuth) {
-    next()
-  } else {
-    req.session.error = '';
-    res.render('login', {
-      isAuth: req.session.isAuth,
-      message: "You are not logged in!",
-      title: "Log In | "
-    })
-  }
-}
+
 
 // ---------------------------------------------------------------------
 // -------------------------------NODE MAILER---------------------------
@@ -232,15 +125,6 @@ function mail(from, to, meet, type) {
 // ---------------------------------------------------------------------
 
 app.get('/', function(req, res) {
-
-  // const PythonShell = require('python-shell').PythonShell;
-
-  // PythonShell.run('./script.py', null, function (err) {
-  //   if (err) throw err;
-  //   // console.log('finished');
-  // });
-
-  
   req.session.error = '';
   res.render('home', {
     isAuth: req.session.isAuth,
