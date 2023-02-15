@@ -29,6 +29,8 @@ const Chat = require("./models/chat");
 const Meet = require("./models/meet");
 const Group = require("./models/group");
 const User = require("./models/user");
+const hostmeet_router = require("./routes/hostmeet");
+const joinmeet_router = require("./routes/joinmeet");
 
 const {
   v4: uuidV4
@@ -132,33 +134,12 @@ app.get('/', function(req, res) {
   });
 });
 
-// ${uuidV4} generates an uuid.
-app.get('/hostmeet', function(req, res) {
-  req.session.error = '';
-  res.redirect(`/hostmeet/${uuidV4()}`);
-});
-app.get('/hostmeet/:meet', function(req, res) {
-  if (uuidValidate(req.params.meet)) { //validates if used a proper uuidV4
-    req.session.error = '';
-    res.render('hostmeet', {
-      meetId: req.params.meet,
-      isAuth: req.session.isAuth,
-      title: 'Host | '
-    });
-  } else {
-    req.session.error = '';
-    res.redirect(`/hostmeet/${uuidV4()}`)
-  }
-})
 
-app.get('/joinmeet', function(req, res) {
-  req.session.error = '';
-  res.render('joinmeet', {
-    isAuth: req.session.isAuth,
-    message: "",
-    title: "Join | "
-  });
-})
+
+app.use("/hostmeet/",hostmeet_router);
+app.use("/joinmeet/",joinmeet_router);
+
+
 
 
 // Screen sharing routes one for the person sharing and other for the audience
@@ -571,77 +552,7 @@ app.get('/logout', function(req, res) {
 // ---------------------------------------------------------------------
 // -----------------------------POST ROUTES------------------------------
 // ---------------------------------------------------------------------
-app.post('/joinmeet', function(req, res) {
-  let meetId = req.body.meetid;
-  if (uuidValidate(meetId)) { //validates if used a proper uuidV4
-    let userName = req.body.name;
-    let video = req.body.video;
-    let audio = req.body.audio;
-    if (video == 'on') {
-      video = true;
-    } else {
-      video = false;
-    }
-    if (audio == 'on') {
-      audio = true;
-    } else {
-      audio = false;
-    }
-    if (!userName) {
-      userName = 'Imposter'
-    }
-    res.render('meet', {
-      meetId: meetId,
-      title: '',
-      userName: userName,
-      video: video,
-      chats: [],
-      audio: audio,
-      isAuth: req.session.isAuth,
-      title: 'Create Meet | '
-    })
-  } else {
-    res.render('joinmeet', {
-      isAuth: req.session.isAuth,
-      message: "Invalid meetId!!",
-      title: "Join | "
-    });
-  }
-  // res.redirect('/meet/' + meetId);
-})
-app.post('/hostmeet/:meet', function(req, res) {
-  let meetId = req.params.meet;
-  if (uuidValidate(meetId)) { //validates if used a proper uuidV4
-    let userName = req.body.name;
-    let video = req.body.video;
-    let audio = req.body.audio;
-    if (video == 'on') {
-      video = true;
-    } else {
-      video = false;
-    }
-    if (audio == 'on') {
-      audio = true;
-    } else {
-      audio = false;
-    }
-    if (!userName) {
-      userName = 'Host'
-    }
-    res.render('meet', {
-      meetId: meetId,
-      title: '',
-      chats: [],
-      userName: userName,
-      video: video,
-      audio: audio,
-      isAuth: req.session.isAuth,
-      title: "Meet | "
-    })
-  } else {
-    res.redirect('/hostmeet')
-  }
-})
+
 
 app.post('/joingroup', isAuth, async function(req, res) {
   let name = req.body.name;
