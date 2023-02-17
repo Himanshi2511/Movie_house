@@ -31,6 +31,7 @@ const Group = require("./models/group");
 const User = require("./models/user");
 const hostmeet_router = require("./routes/hostmeet");
 const joinmeet_router = require("./routes/joinmeet");
+const router_login = require("./routes/login.js");
 
 const {
   v4: uuidV4
@@ -138,6 +139,7 @@ app.get('/', function(req, res) {
 
 app.use("/hostmeet/",hostmeet_router);
 app.use("/joinmeet/",joinmeet_router);
+app.use("/login",router_login);
 
 
 
@@ -158,18 +160,7 @@ app.get('/display/:meet', function(req, res) {
   });
 })
 
-app.get('/login', function(req, res) {
-  if (req.session.isAuth) { //if user is already logged in redirects to the dashboard
-    req.session.error = '';
-    res.redirect('/dashboard')
-  } else {
-    res.render('login', {
-      isAuth: req.session.isAuth,
-      message: req.session.error,
-      title: "Log In |"
-    });
-  }
-})
+
 app.get('/signup', function(req, res) {
   if (req.session.isAuth) { //if user is already logged in redirects to the dashboard
     req.session.error = '';
@@ -776,37 +767,7 @@ app.post('/signup', async function(req, res) {
   req.session.error = "Welcome " + username + " !"
   res.redirect('/dashboard');
 })
-app.post('/login', async function(req, res) {
-  let email = req.body.email;
-  let password = req.body.password;
-  let user = await User.findOne({ //Checks if the user exists
-    email: email
-  }, function(err, user) {
-    if (!user) {
-      req.session.error = "";
-      return res.render("signup", {
-        isAuth: req.session.isAuth,
-        message: "User Does Not Exist",
-        title: "Sign Up | "
-      });
-    }
-  })
 
-  const isMatch = await bcrypt.compare(password, user.password)
-  if (isMatch) {
-    req.session.isAuth = true;
-    req.session.user = user._id;
-    req.session.error = "Welcome " + user.username + " !"
-    res.redirect('/dashboard');
-  } else {
-    req.session.error = "";
-    res.render("login", {
-      isAuth: req.session.isAuth,
-      message: 'Incorrect Password',
-      title: 'Log In |'
-    });
-  }
-})
 
 
 // ---------------------------------------------------------------------
