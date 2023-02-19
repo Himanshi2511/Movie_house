@@ -1,5 +1,4 @@
 const router = require('express').Router();
-const mongoose = require("mongoose");
 const User = require("../models/user");
 const bcrypt = require('bcryptjs');
 
@@ -34,7 +33,6 @@ router.post('/', async function(req, res) {
         });
       }
     })
-  
     const isMatch = await bcrypt.compare(password, user.password)
     if (isMatch) {
       req.session.isAuth = true;

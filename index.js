@@ -1,16 +1,3 @@
-// Contents
-// Requiring Modules --------------------------------- Line 14-37
-// Connecting to Database & Storing of sessions ------ Line 39-52
-// Middlewares --------------------------------------- Line 54-66
-// Schemas ------------------------------------------- Line 73-159
-// User Auth function -------------------------------- Line 166-177
-// Node Mailer function ------------------------------ Line 182-215
-// Get Routes ---------------------------------------- Line 221-654
-// Post Routes --------------------------------------- Line 659-980
-// Sockets ------------------------------------------- Line 986-1068
-// Cron scheduler ------------------------------------ Line 1075-1118
-
-
 const nodePickle = require('node-pickle');
 const express = require('express');
 const app = express();
@@ -24,6 +11,9 @@ const mongoose = require('mongoose');
 const nodemailer = require("nodemailer")
 const cors = require('cors');
 const cron = require('node-cron');
+
+
+
 const isAuth = require("./middleware/auth");
 const Chat = require("./models/chat");
 const Meet = require("./models/meet");
@@ -32,21 +22,11 @@ const User = require("./models/user");
 const hostmeet_router = require("./routes/hostmeet");
 const joinmeet_router = require("./routes/joinmeet");
 const router_login = require("./routes/login.js");
-
-const {
-  v4: uuidV4
-  
-} = require('uuid');
-const {
-  validate: uuidValidate
-} = require('uuid');
-const {
-  ExpressPeerServer
-} = require('peer');
-const peerServer = ExpressPeerServer(server, {
-  debug: true
-});
-
+const router_signup = require("./routes/signup.js");
+const router_dashboard = require("./routes/dashboard");
+const router_contact = require("./routes/contact");
+const router_meet = require("./routes/meet");
+const router_chat = require("./routes/chat");
 
 //connecting to mongodb
 const uri = 'mongodb+srv://shash:stark123@cluster0.td1gn.mongodb.net/?retryWrites=true&w=majority';
@@ -65,6 +45,20 @@ const store = new mongoDbSession({
   uri: uri,
   collection: "sessions"
 })
+
+const {
+  v4: uuidV4
+  
+} = require('uuid');
+const {
+  validate: uuidValidate
+} = require('uuid');
+const {
+  ExpressPeerServer
+} = require('peer');
+const peerServer = ExpressPeerServer(server, {
+  debug: true
+});
 
 
 app.use(bodyParser.urlencoded({
@@ -140,8 +134,11 @@ app.get('/', function(req, res) {
 app.use("/hostmeet/",hostmeet_router);
 app.use("/joinmeet/",joinmeet_router);
 app.use("/login",router_login);
-
-
+app.use("/signup",router_signup);
+app.use("/dashboard",router_dashboard);
+app.use("/contactus",router_contact);
+app.use("/meet",router_meet);
+app.use("/chat",router_chat);
 
 
 // Screen sharing routes one for the person sharing and other for the audience
@@ -160,61 +157,12 @@ app.get('/display/:meet', function(req, res) {
   });
 })
 
-
-app.get('/signup', function(req, res) {
-  if (req.session.isAuth) { //if user is already logged in redirects to the dashboard
-    req.session.error = '';
-    res.redirect('/dashboard')
-  } else {
-    res.render('signup', {
-      isAuth: req.session.isAuth,
-      message: req.session.error,
-      title: "Sign Up | "
-    })
-  }
-})
-
 //This is the room route for signed up users as these meets have a title and require stored chats
-app.get('/meet/:meet/:title', isAuth, function(req, res) {
-  let meetId = req.params.meet
-  let title = req.params.title + " | "
-  let user = req.session.user
-  let video = true
-  let audio = true
-  //'Not' checking if the user is part of the group to allow other logged in users to the meet
-  User.findOne({
-    _id: user
-  }, function(err, foundUser) {
-    if (err) {
-      req.session.destroy((err) => {
-        res.render('login', {
-          isAuth: req.session.isAuth,
-          message: "You are not logged in!",
-          title: "Log In |"
-        });
-      })
-    } else {
-      Meet.findOne({
-        _id: meetId
-      }).populate('chats').exec(function(err, meet) { //Fetches chats
-        if (err) {
-          res.redirect('/dashboard');
-        } else {
-          res.render('meet', {
-            meet: meet,
-            chats: meet.chats,
-            meetId: meetId,
-            title: title,
-            userName: foundUser.username,
-            video: video,
-            audio: audio,
-            isAuth: req.session.isAuth,
-          })
-        }
-      })
-    }
-  })
-})
+
+
+
+
+
 app.get('/hangup', function(req, res) {
   if (req.session.user) { //If logged in redirects to dashboard
     res.redirect('/dashboard')
@@ -222,127 +170,7 @@ app.get('/hangup', function(req, res) {
     res.redirect('/joinmeet')
   }
 })
-app.get('/dashboard', isAuth, function(req, res) {
-  User.findOne({ // Fetches all groups this user is a part of
-    _id: req.session.user
-  }).populate('groups').exec(function(err, user) {
-    if (err) {
-      res.render('login', {
-        isAuth: req.session.isAuth,
-        message: "You are not logged in!",
-        title: "Log In | "
-      })
-    } else {
-      // console.log(user)
-      const spawn = require("child_process").spawn;
-      const pythonProcess = spawn('python3',["./script.py", user.history]);
-        pythonProcess.stdout.on('data', (data) => {
-        console.log(data.toString())
-        });
-        // Handle error output
-        pythonProcess.stderr.on('data', (data) => {
-          // As said before, convert the Uint8Array to a readable string.
-          console.log(String.fromCharCode.apply(null, data));
-        });
-    
-        pythonProcess.on('exit', (code) => {
-          console.log("Process quit with code : " + code);
-        });
 
-      let message = req.session.error;
-      req.session.error = ""
-      res.render('dashboard', {
-        groups: user.groups,
-        thisgroup: '',
-        meets: [],
-        members: [],
-        user: user,
-        message: message,
-        // history: history,
-        isAuth: req.session.isAuth,
-        title: 'Dashboard | '
-      })
-    }
-  })
-
-})
-app.get('/dashboard/:group', isAuth, async function(req, res) { //Group's Dashboard
-  let groups = [];
-  let members = await User.find({ //fetches members of this group
-    groups: req.params.group
-  }, function(err, members) {
-    if (!members) {
-      req.session.error = "Group doesn't exists!"
-      return res.redirect('/dashboard');
-    }
-  });
-
-
-  User.findOne({ // Fetches all groups this user is a part of
-    _id: req.session.user,
-    groups: req.params.group
-  }).populate('groups').exec(function(err, user) { //Fetches groups of this user
-    if (!user) { //If user is accessing this group wrongfully
-      req.session.error = 'Your are not part of this group!'
-      return res.redirect('/dashboard');
-    } else {
-      groups = user.groups;
-      Group.findOne({ //Fetches all the meets of this particular group
-        _id: req.params.group
-      }).populate('meets').exec(function(err, group) {
-        if (err || !group) {
-          res.redirect('/dashboard');
-        } else {
-          let message = req.session.error;
-          req.session.error = "";
-          res.render('dashboard', {
-            groups: groups,
-            thisgroup: group,
-            user: req.session.user,
-            meets: group.meets,
-            message: message,
-            members: members,
-            isAuth: req.session.isAuth,
-            title: group.groupname + " | "
-          })
-        }
-      })
-    }
-  });
-})
-app.get('/chat/:group/:meet', isAuth, function(req, res) { //Chat page of a meet
-  User.findOne({
-    _id: req.session.user,
-    groups: req.params.group
-  }).populate('groups').exec(function(err, user) {
-    if (!user) { //If the user is accessing a group wrongfully
-      req.session.error = "You are not part of this group!"
-      return res.redirect('/dashboard');
-    } else {
-      groups = user.groups;
-      userName = user.username;
-      Meet.findOne({ //Checks if the meet exists
-        _id: req.params.meet
-      }).populate('chats').exec(function(err, meet) {
-        if (err) {
-          req.session.error = "Meet does not exist!"
-          res.redirect('/dashboard');
-        } else {
-          res.render('chat', {
-            groups: groups,
-            thisgroup: '',
-            userName: userName,
-            meet: meet,
-            message: "",
-            chats: meet.chats,
-            isAuth: req.session.isAuth,
-            title: meet.meetname + " | "
-          })
-        }
-      })
-    }
-  })
-})
 app.get('/reminder/:group/:meet', isAuth, async function(req, res) { //reminder route
   let meet = await Meet.findOne({ //Checks if the meetid is proper
     _id: req.params.meet
@@ -694,79 +522,7 @@ app.post('/createmeet/:group', isAuth, async function(req, res) {
   })
 
 })
-app.post('/contactus', function(req, res) {
-  let mailTransporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // use TLS
-    auth: {
-      user: 'engageorangecube@gmail.com',
-      pass: process.env.PASSWORD
-    }
-  });
 
-  let mailDetails = {
-    to: 'engageorangecube@gmail.com',
-    subject: req.body.subject,
-    html: req.body.feedback
-  };
-
-  mailTransporter.sendMail(mailDetails, function(err, data) {
-    if (err) {
-      console.log(err);
-    }
-  });
-  req.session.error = "";
-  res.render('contactus', {
-    isAuth: req.session.isAuth,
-    message: "Your Email has been Received! Thank You for your Feedback!",
-    title: "Contact Us | "
-  })
-})
-app.post('/signup', async function(req, res) {
-  let email = req.body.email;
-  let username = req.body.username;
-  let password = req.body.password;
-  let repassword = req.body.repassword;
-  console.log(email,username,password)
-  if (email == "" || username == "" || password == "") { //Input cannot be blank
-    return res.render('signup', {
-      isAuth: req.session.isAuth,
-      message: "Please Input Every Data!",
-      title: 'Sign Up | '
-    })
-  }
-  if (password != repassword) { //Equate the two passwords
-    return res.render('signup', {
-      isAuth: req.session.isAuth,
-      message: "Passwords do not match.",
-      title: 'Sign Up | '
-    })
-  }
-  // let foundUser = await User.findOne({ //Shouldn't be an existing user
-  //   email: email
-  // });
-  // if (foundUser) {
-  //   req.session.error = ""
-  //   return res.render('signup', {
-  //     isAuth: req.session.isAuth,
-  //     message: "User Already Exists!",
-  //     title: 'Sign Up | '
-  //   });
-  // }
-  const hashedPsw = await bcrypt.hash(password, 5); //hashing
-
-  const user = new User({
-    email: email,
-    username: username,
-    password: hashedPsw
-  });
-  await user.save();
-  req.session.isAuth = true;
-  req.session.user = user._id;
-  req.session.error = "Welcome " + username + " !"
-  res.redirect('/dashboard');
-})
 
 
 
