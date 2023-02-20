@@ -1,5 +1,15 @@
 const router = require("express").Router();
-const nodemailer = require("nodemailer")
+const nodemailer = require("nodemailer");
+
+
+router.get('/', function(req, res) {
+  res.render('contactus', {
+    isAuth: req.session.isAuth,
+    message: "",
+    title: "Contact Us | "
+  })
+})
+
 router.post('/', function(req, res) {
     let mailTransporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',

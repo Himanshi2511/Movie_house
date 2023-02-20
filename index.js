@@ -13,7 +13,6 @@ const cors = require('cors');
 const cron = require('node-cron');
 
 
-
 const isAuth = require("./middleware/auth");
 const Chat = require("./models/chat");
 const Meet = require("./models/meet");
@@ -27,6 +26,7 @@ const router_dashboard = require("./routes/dashboard");
 const router_contact = require("./routes/contact");
 const router_meet = require("./routes/meet");
 const router_chat = require("./routes/chat");
+const router_reminder = require("./routes/reminder");
 
 //connecting to mongodb
 const uri = 'mongodb+srv://shash:stark123@cluster0.td1gn.mongodb.net/?retryWrites=true&w=majority';
@@ -139,6 +139,7 @@ app.use("/dashboard",router_dashboard);
 app.use("/contactus",router_contact);
 app.use("/meet",router_meet);
 app.use("/chat",router_chat);
+app.use("/reminder",router_reminder);
 
 
 // Screen sharing routes one for the person sharing and other for the audience
@@ -171,37 +172,6 @@ app.get('/hangup', function(req, res) {
   }
 })
 
-app.get('/reminder/:group/:meet', isAuth, async function(req, res) { //reminder route
-  let meet = await Meet.findOne({ //Checks if the meetid is proper
-    _id: req.params.meet
-  }, function(err, meet) {
-    if (!meet) {
-      req.session.error = "Meet does not exist!"
-      return res.redirect("/dashboard/" + req.params.group);
-    }
-  })
-
-  let user = await User.findOne({ //Checks if the user is the part of this meet
-    _id: req.session.user,
-    groups: req.params.group
-  }, function(err, meet) {
-    if (!meet) {
-      req.session.error = "You are not part of this group!"
-      return res.redirect('/dashboard');
-    }
-  })
-  User.find({ //Finds all users of this group
-    groups: req.params.group
-  }, function(err, members) {
-
-    members.forEach(function(member) { //Mails each one of them
-      mail(user, member, meet, "reminder")
-    })
-
-    res.redirect('/dashboard/' + req.params.group)
-  })
-
-})
 
 app.get('/group', isAuth, function(req, res) { //Group creating route
   res.render('creategroup', {
@@ -210,6 +180,7 @@ app.get('/group', isAuth, function(req, res) { //Group creating route
     title: "Create Group | "
   })
 })
+
 app.get('/joingroup', isAuth, function(req, res) { //Group joining route
   res.render('joingroup', {
     isAuth: req.session.isAuth,
@@ -344,19 +315,7 @@ app.get('/undomeet/:group/:meet', isAuth, async function(req, res) { //Undo canc
   })
 })
 
-// app.get('/help', function(req, res) {
-//   res.render('help', {
-//     isAuth: req.session.isAuth,
-//     title: "Help | "
-//   })
-// })
-app.get('/contactus', function(req, res) {
-  res.render('contactus', {
-    isAuth: req.session.isAuth,
-    message: "",
-    title: "Contact Us | "
-  })
-})
+
 app.get('/logout', function(req, res) {
   req.session.destroy((err) => {
     if (err) throw err;
