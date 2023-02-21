@@ -1,4 +1,6 @@
 const router = require("express").Router();
+const mail = require("../middleware/mail");
+const isAuth = require('../middleware/auth')
 
 router.get('/:group/:meet', isAuth, async function(req, res) { //reminder route
     let meet = await Meet.findOne({ //Checks if the meetid is proper

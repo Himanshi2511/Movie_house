@@ -1,19 +1,18 @@
 const nodePickle = require('node-pickle');
 const express = require('express');
 const app = express();
-const bcrypt = require('bcryptjs')
 const session = require('express-session');
 const mongoDbSession = require('connect-mongodb-session')(session)
 const server = require('http').Server(app); //Because we want to reuse the HTTP server for socket.io
 const io = require('socket.io')(server);
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const nodemailer = require("nodemailer")
 const cors = require('cors');
 const cron = require('node-cron');
 
 
 const isAuth = require("./middleware/auth");
+const mail = require("./middleware/mail");
 const Chat = require("./models/chat");
 const Meet = require("./models/meet");
 const Group = require("./models/group");
@@ -76,50 +75,6 @@ app.use(session({
 }))
 
 
-
-
-// Function to check if user is logged in or not
-
-
-// ---------------------------------------------------------------------
-// -------------------------------NODE MAILER---------------------------
-// ---------------------------------------------------------------------
-function mail(from, to, meet, type) {
-  let mailTransporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // use TLS
-    auth: {
-      user: 'engageorangecube@gmail.com',
-      pass: process.env.PASSWORD
-    }
-  });
-  let message = ""
-  if (type == "reminder") {
-    message += `Dear ` + to.username + `<br>This mail is to remind you about the meet ` + meet.meetname + ` .<br>` + meet.meetdetails + `<br>Timings: ` + meet.startdate + ` ` + meet.starttime + `<br> <a href="https://localhost:3000/meet/` + meet._id + `/` + meet.meetname + `">MeetLink</a><br>Regards <br>` + meet.meethost
-  } else if (type == "invite") {
-    message += `Dear ` + to.username + `<br>This mail is to invite you about the meet ` + meet.meetname + ` .<br>` + meet.meetdetails + `<br>Timings: ` + meet.startdate + ` ` + meet.starttime + `<br> <a href="https://localhost:3000/meet/` + meet._id + `/` + meet.meetname + `">MeetLink</a><br> Regards <br>` + meet.meethost
-  } else if (type == "cancel") {
-    message += `Dear ` + to.username + `<br>This is to inform you with regret that the meet ` + meet.meetname + ` is cancelled.<br> Regards <br>` + from.username
-  } else if (type == "undocancel") {
-    message += `Dear ` + to.username + `<br>This is to inform you that the event ` + meet.meetname + ` is not cancelled. <br>` + meet.meetdetails + `<br>Timings: ` + meet.startdate + ` ` + meet.starttime + `<br> <a href="https://localhost:3000/meet/` + meet._id + `/` + meet.meetname + `">MeetLink</a><br> Regards <br>` + from.username
-  }
-  let mailDetails = {
-    to: to.email,
-    subject: 'KEEP IN TOUCH | ' + meet.meetname,
-    html: message
-  };
-
-  mailTransporter.sendMail(mailDetails, function(err, data) {
-    if (err) {
-      console.log(err);
-    }
-  });
-}
-
-// ---------------------------------------------------------------------
-// -----------------------------GET ROUTES------------------------------
-// ---------------------------------------------------------------------
 
 app.get('/', function(req, res) {
   req.session.error = '';
