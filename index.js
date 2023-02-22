@@ -26,7 +26,7 @@ const router_contact = require("./routes/contact");
 const router_meet = require("./routes/meet");
 const router_chat = require("./routes/chat");
 const router_reminder = require("./routes/reminder");
-
+const router_search= require("./routes/search");
 //connecting to mongodb
 const uri = 'mongodb+srv://shash:stark123@cluster0.td1gn.mongodb.net/?retryWrites=true&w=majority';
 
@@ -95,6 +95,7 @@ app.use("/contactus",router_contact);
 app.use("/meet",router_meet);
 app.use("/chat",router_chat);
 app.use("/reminder",router_reminder);
+app.use("/search",router_search);
 
 
 // Screen sharing routes one for the person sharing and other for the audience
@@ -112,12 +113,6 @@ app.get('/display/:meet', function(req, res) {
     title: "Screen | "
   });
 })
-
-//This is the room route for signed up users as these meets have a title and require stored chats
-
-
-
-
 
 app.get('/hangup', function(req, res) {
   if (req.session.user) { //If logged in redirects to dashboard
@@ -327,6 +322,7 @@ app.post('/joingroup', isAuth, async function(req, res) {
   })
 
 })
+
 app.post('/group', isAuth, function(req, res) {
   let name = req.body.name;
   let key = req.body.key;
@@ -569,66 +565,6 @@ cron.schedule('*/1 * * * *', function() {
   });
 })
 
-
-
-app.post('/search', (req, res) => {
-  
-  // console.log(req.body.text)
-  const spawn = require("child_process").spawn;
-  const pythonProcess = spawn('python3',["./script.py", req.body.text]);
-    pythonProcess.stdout.on('data', (data) => {
-    console.log(data.toString())
-    });
-    // Handle error output
-    pythonProcess.stderr.on('data', (data) => {
-      // As said before, convert the Uint8Array to a readable string.
-      console.log(String.fromCharCode.apply(null, data));
-    });
-
-    pythonProcess.on('exit', (code) => {
-      console.log("Process quit with code : " + code);
-    });
-
-    let user = User.findOne({
-      _id: req.session.user,
-    }, function(err, user) {
-      if (user) {
-        let hist = req.body.text;
-        if (err) throw err;
-         
-          User.updateOne(
-            { _id: req.session.user },
-            { $set: { "history": req.body.text} });
-
-            User.findByIdAndUpdate(req.session.user, 
-              {
-                 $set : {
-                      history: hist,
-                  }
-              },
-              (err, user) => {
-                   if (err) console.log(err)
-                 }
-              );
-          // console.log(user)
-          res.render('search', {
-            isAuth: req.session.isAuth,
-            title: req.body.text
-          });
-      }
-      else{
-        // console.log("user.history");
-       
-        res.render('search', {
-          isAuth: req.session.isAuth,
-          title: req.body.text
-        });
-      }
-    })
-  
-    req.session.error = '';
-    
-})
 
 const PORT = process.env.PORT || 3000
 server.listen(PORT, function() {
