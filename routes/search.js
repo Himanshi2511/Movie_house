@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const User = require("../models/user");
 
 router.post('/', (req, res) => {
     const spawn = require("child_process").spawn;
