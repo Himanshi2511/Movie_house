@@ -8,7 +8,7 @@ const io = require('socket.io')(server);
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const cron = require('node-cron');
+
 
 
 const isAuth = require("./middleware/auth");
@@ -27,6 +27,10 @@ const router_meet = require("./routes/meet");
 const router_chat = require("./routes/chat");
 const router_reminder = require("./routes/reminder");
 const router_search= require("./routes/search");
+const router_joingroup = require("./routes/joingroup");
+const router_group = require("./routes/group");
+const router_time = require("./middleware/corn_time");
+
 //connecting to mongodb
 const uri = 'mongodb+srv://shash:stark123@cluster0.td1gn.mongodb.net/?retryWrites=true&w=majority';
 
@@ -35,7 +39,10 @@ mongoose.connect(uri || "mongodb://localhost:27017/touchDB", {
   useNewUrlParser: true,
   useCreateIndex: true,
   useUnifiedTopology: true
-}).then(() => console.log('DB connected successfully...'))
+}).then(() => {
+  console.log('DB connected successfully...')
+  router_time;
+})
 .catch((err) => console.log('DB could not connect!\nError: ',err));
 
 
@@ -96,6 +103,8 @@ app.use("/meet",router_meet);
 app.use("/chat",router_chat);
 app.use("/reminder",router_reminder);
 app.use("/search",router_search);
+app.use("/joingroup",router_joingroup);
+app.use("/group",router_group);
 
 
 // Screen sharing routes one for the person sharing and other for the audience
@@ -106,6 +115,7 @@ app.get('/share/:meet', function(req, res) {
     isAuth: req.session.isAuth,
   });
 })
+
 app.get('/display/:meet', function(req, res) {
   res.render('displayscreen', {
     meetId: req.params.meet,
@@ -122,22 +132,6 @@ app.get('/hangup', function(req, res) {
   }
 })
 
-
-app.get('/group', isAuth, function(req, res) { //Group creating route
-  res.render('creategroup', {
-    isAuth: req.session.isAuth,
-    message: '',
-    title: "Create Group | "
-  })
-})
-
-app.get('/joingroup', isAuth, function(req, res) { //Group joining route
-  res.render('joingroup', {
-    isAuth: req.session.isAuth,
-    message: '',
-    title: 'Join Group | '
-  })
-})
 
 app.get("/leave/:group", isAuth, function(req, res) { //Group leaving route
   const group = req.params.group;
@@ -184,6 +178,7 @@ app.get('/createmeet/:group', isAuth, async function(req, res) { //Meet creating
   });
 
 })
+
 app.get('/cancelmeet/:group/:meet', isAuth, async function(req, res) { //Cancels meet
   let meet = await Meet.findOne({ //Checks if the meet exists
     _id: req.params.meet
@@ -224,6 +219,7 @@ app.get('/cancelmeet/:group/:meet', isAuth, async function(req, res) { //Cancels
     }
   })
 })
+
 app.get('/undomeet/:group/:meet', isAuth, async function(req, res) { //Undo cancel meet
   let meet = await Meet.findOne({ //Checks if the meet exist
     _id: req.params.meet
@@ -281,94 +277,6 @@ app.get('/logout', function(req, res) {
 // -----------------------------POST ROUTES------------------------------
 // ---------------------------------------------------------------------
 
-
-app.post('/joingroup', isAuth, async function(req, res) {
-  let name = req.body.name;
-  let key = req.body.key;
-  let group = await Group.findOne({ //Checks if the entered data matches
-    groupname: name,
-    groupkey: key
-  }, function(err, group) {
-    if (!group) {
-      req.session.error = "";
-      return res.render('joingroup', {
-        isAuth: req.session.isAuth,
-        message: "Recheck name and key!",
-        title: "Join Group | "
-      })
-    }
-  });
-
-  let ispart = await User.findOne({ //If user is already part of the group
-    _id: req.session.user,
-    groups: group._id
-  }, function(err, ispart) {
-    if (ispart) {
-      req.session.error = "You are already in the group!";
-      return res.redirect('/dashboard/' + group._id)
-    }
-  })
-
-  User.findOne({ //Else adds it to his/her groups list
-    _id: req.session.user,
-  }, function(err, foundUser) {
-    if (err) {
-      return res.redirect('/joingroup');
-    }
-    foundUser.groups.push(group._id);
-    foundUser.save();
-    req.session.error = "";
-    res.redirect('/dashboard/' + group._id)
-  })
-
-})
-
-app.post('/group', isAuth, function(req, res) {
-  let name = req.body.name;
-  let key = req.body.key;
-
-  Group.findOne({ //Checks if the groupname is already taken or not
-    groupname: name
-  }, function(err, foundGroup) {
-    if (foundGroup) {
-      req.session.error = ""
-      return res.render('creategroup', {
-        isAuth: req.session.isAuth,
-        message: "Sorry! Group Name already taken!",
-        title: "Create Group | "
-      });
-    } else {
-      if (name == "" || key == "") {
-        req.session.error = ""
-        return res.render('creategroup', {
-          isAuth: req.session.isAuth,
-          message: "Please Input all Data",
-          title: "Create Group | "
-        });
-      } else {
-        User.findOne({
-          _id: req.session.user
-        }, function(err, foundUser) {
-          if (err) {
-            req.session.error = "User logged out!"
-            res.redirect('/login');
-          } else {
-            const group = new Group({
-              groupname: name,
-              groupkey: key
-            });
-            group.save();
-            foundUser.groups.push(group._id);
-            foundUser.save();
-            res.redirect('/dashboard/' + group._id)
-          }
-        })
-      }
-    }
-  });
-
-
-})
 
 app.post('/createmeet/:group', isAuth, async function(req, res) {
   let groupid = req.params.group;
@@ -440,6 +348,7 @@ app.post('/createmeet/:group', isAuth, async function(req, res) {
 // -----------------------------SOCKET----------------------------------
 // ---------------------------------------------------------------------
 // All connections for the meet
+
 io.on('connection', socket => {
   socket.on('entermeet', function(meetId, userId, userName) {
     socket.join(meetId); //join this meet
@@ -514,56 +423,6 @@ io.on('connection', socket => {
     socket.to(meetId).emit('display', userId, userName);
   });
 });
-
-
-// ---------------------------------------------------------------------
-// -----------------------------NODE-CRON-------------------------------
-// ---------------------------------------------------------------------
-// This cron scheduler checks every minute if any meet is starting and send a
-// reminder mail to the users.
-cron.schedule('*/1 * * * *', function() {
-  let today = new Date()
-  let todayOffset = today.getTimezoneOffset();
-  let ISTOffset = 330;
-  let ISTTime = new Date(today.getTime() + (ISTOffset + todayOffset) * 60000);
-  today = ISTTime.getFullYear() + "-" + String(ISTTime.getMonth() + 1).padStart(2, '0') + "-" + String(ISTTime.getDate()).padStart(2, '0');
-  let time = String(ISTTime.getHours()).padStart(2, '0') + ":" + String(ISTTime.getMinutes()).padStart(2, '0');
-  console.log(today + " " + time);
-  let meets = Meet.find({ //This finds every meet which are yet to begin and are not cancelled
-    reminder: 0,
-    status: 0
-  }, function(err, meets) {
-    if (err)
-      return;
-    meets.forEach(function(meet) {
-      // For each meet we check if it's scheduled now, if yes we update
-      // the reminder to 1 that means the meeting has begun and we remind all
-      // members of that group about the meeting.
-      if (today == meet.startdate && time == meet.starttime) {
-        console.log('A');
-        Meet.updateOne({
-          _id: meet._id
-        }, {
-          $set: {
-            reminder: 1
-          }
-        }, function(err, m) {
-          Group.findOne({
-            meets: meet._id
-          }, function(err, group) {
-            User.find({
-              groups: group._id
-            }, function(err, users) {
-              users.forEach(function(user) {
-                mail('', user, meet, "reminder")
-              })
-            })
-          })
-        })
-      }
-    })
-  });
-})
 
 
 const PORT = process.env.PORT || 3000
