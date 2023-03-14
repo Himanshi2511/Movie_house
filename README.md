@@ -1,6 +1,6 @@
 # **Movie_house**
 
-Movie_house is a web development project. It is designed and developed by Himanshi Sharma,Ankit Gupta. It is a project related to movie recommendation. Movie is recommended on the basis of search history and it also recommends 6 other movies which are of the same genre as of the one we had searched. Additional feature is that two or more people can create room together and can enjoy the movie together.
+This **Movie_house** is a web-dev project, aims at recommending the movies and series to the user based on the search history of the user with the help of ML Algorithms. It also recommends the content on the basis of user's Genre history as well as genre based filtering of the content. Along with all these, users can create rooms together and hang out and chill while watching the movies. This project is solely designed and developed by our team System_Reboot (Shashank Singh,Himanshi Sharma,Ankit Gupta). 
 
 
 # To start the app
